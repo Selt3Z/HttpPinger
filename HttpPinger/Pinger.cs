@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 
 namespace HttpPinger
 {
-    class Program
+    public class Pinger
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Console.WriteLine("HttpPinger CLI");
             Console.WriteLine("Enter URLs to ping, type 'exit' to quit.");
@@ -33,7 +33,7 @@ namespace HttpPinger
             await PingUrlsAsync(urls);
         }
 
-        static async Task PingUrlsAsync(List<string> urls)
+        public static async Task PingUrlsAsync(List<string> urls)
         {
             var results = new List<PingResult>();
             using (var httpClient = new HttpClient())
@@ -59,6 +59,7 @@ namespace HttpPinger
 
             string json = JsonConvert.SerializeObject(results, Formatting.Indented);
             await System.IO.File.WriteAllTextAsync("ping_results.json", json);
+            Console.WriteLine(json);
             Console.WriteLine("Ping results saved to ping_results.json");
         }
     }
