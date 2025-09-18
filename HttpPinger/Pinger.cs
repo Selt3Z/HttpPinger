@@ -22,6 +22,11 @@ namespace HttpPinger
                 if (input?.ToLower() == "s" || input?.ToLower() == "ы") break;
                 if (Uri.IsWellFormedUriString(input, UriKind.Absolute))
                 {
+                    if (urls.Contains(input))
+                    {
+                        Console.WriteLine("URL is already added.");
+                        continue;
+                    }
                     urls.Add(input);
                     Console.WriteLine($"Added: {input}");
                 }
