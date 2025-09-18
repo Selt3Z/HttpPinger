@@ -11,14 +11,14 @@ namespace HttpPinger
         public static async Task Main(string[] args)
         {
             Console.WriteLine("HttpPinger CLI");
-            Console.WriteLine("Enter URLs to ping, type 'exit' to quit.");
+            Console.WriteLine("Enter URLs to ping, type 'start' to start.");
 
             var urls = new List<string>();
             while (true)
             {
                 Console.Write("> ");
                 var input = Console.ReadLine();
-                if (input?.ToLower() == "exit") break;
+                if (input?.ToLower() == "start") break;
                 if (Uri.IsWellFormedUriString(input, UriKind.Absolute))
                 {
                     urls.Add(input);
@@ -38,7 +38,10 @@ namespace HttpPinger
             var results = new List<PingResult>();
             using (var httpClient = new HttpClient())
             {
-                foreach (var url in urls)
+                // timeout 10 sec
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
+
+                var tasks = urls.Select(async url =>
                 {
                     var result = new PingResult { Url = url };
                     try
@@ -53,7 +56,22 @@ namespace HttpPinger
                         result.StatusCode = 0;
                         result.Error = ex.Message;
                     }
-                    results.Add(result);
+                    return result;
+                });
+
+                // progress bar
+                int totalUrls = urls.Count;
+                int completedUrls = 0;
+
+                // waiting for all requests over
+                var pingResults = await Task.WhenAll(tasks);
+                results.AddRange(pingResults);
+
+                foreach (var result in pingResults)
+                {
+                    completedUrls++;
+                    Console.Write($"\rProgress: {completedUrls}/{totalUrls} URLs completed.");
+                    Console.WriteLine();
                 }
             }
 
